@@ -1,15 +1,20 @@
 import { Router } from "express";
-import RecipeController from "../controllers/recipe.controller";
+import { expressjwt } from "express-jwt";
+import UserController from "../controllers/user.controller";
 
-class RecipeRoutes {
+const JWT_SECRET = "cockTailMio";
+
+class UserRoutes {
   router = Router();
-  controller = new RecipeController();
+  controller = new UserController();
 
   constructor() {
     this.initializeRoutes();
   }
 
   initializeRoutes() {
+
+    this.router.get("/", this.controller.findAll);
     // Create a new user
     this.router.post("/", this.controller.create);
 
@@ -19,7 +24,14 @@ class RecipeRoutes {
     // Delete a user with id
     this.router.delete("/:id", this.controller.delete);
 
+    this.router.post("/login", this.controller.login);
+
+    this.router.get(
+      "/api/checkLogin",
+      expressjwt({ secret: JWT_SECRET, algorithms: ["HS256"] }),
+      this.controller.checkLogin
+    );
   }
 }
 
-export default new RecipeRoutes().router;
+export default new UserRoutes().router;
