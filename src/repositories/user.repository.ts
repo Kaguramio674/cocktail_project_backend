@@ -95,15 +95,15 @@ class UserRepository {
                 params.push(user.password);
             }
 
-            if (user.liked) {
+            if (user.liked !== undefined) {
                 updateFields.push("liked = ?");
                 params.push(user.liked);
-            }
-
-            if (user.stared) {
+              }
+          
+              if (user.stared !== undefined) {
                 updateFields.push("stared = ?");
                 params.push(user.stared);
-            }
+              }
 
             params.push(user.id);
 

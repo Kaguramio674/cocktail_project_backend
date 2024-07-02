@@ -7,6 +7,7 @@ export default interface User extends RowDataPacket {
   identity: string;
   createdAt?: Date;
   password: string;
-  liked?: string;
-  stared?:string;
+  liked: string;
+  stared:string;
+  imageUrl: string;
 }

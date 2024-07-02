@@ -5,7 +5,7 @@ import Recipe from "../models/recipe.model";
 
 interface IRecipeRepository {
   save(recipe: Recipe): Promise<Recipe>;
-  retrieveAll(searchParams: {name?: string, published?: boolean, current?: number, pageSize?: number}): Promise<{data: Recipe[], total: number}>;
+  retrieveAll(searchParams: {name?: string, current?: number, pageSize?: number}): Promise<{data: Recipe[], total: number}>;
   retrieveById(recipeId: number): Promise<Recipe | undefined>;
   update(recipe: Recipe): Promise<number>;
   delete(recipeId: number): Promise<number>;
@@ -15,8 +15,8 @@ class RecipeRepository implements IRecipeRepository {
   save(recipe: Recipe): Promise<Recipe> {
     return new Promise((resolve, reject) => {
       connection.query<OkPacket>(
-        "INSERT INTO recipes (name, description, published) VALUES(?,?,?)",
-        [recipe.name, recipe.description, recipe.published ? recipe.published : false],
+        "INSERT INTO recipes (name, description, imageUrl, spirit,spiritAmount,basic,basicAmount,juice,juiceAmount,other,otherAmount, alcohol, method ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [recipe.name, recipe.description, recipe.imageurl, recipe.spirit, recipe.spiritAmount, recipe.basic, recipe.basicAmount, recipe.juice, recipe.juiceAmount, recipe.other, recipe.otherAmount, recipe.alcohol, recipe.method],
         (err, res) => {
           if (err) reject(err);
           else
@@ -29,18 +29,23 @@ class RecipeRepository implements IRecipeRepository {
   }
 
   
-  retrieveAll(searchParams: {name?: string, base?: string[], alcohol?: string[], published?: boolean, current?: number, pageSize?: number, sortBy?: string}): Promise<{data: Recipe[], total: number}> {
+  retrieveAll(searchParams: {name?: string, spirit?: string[], alcohol?: string[],current?: number, pageSize?: number, sortBy?: string}): Promise<{data: Recipe[], total: number}> {
     const current = searchParams?.current || 1;
     const pageSize = searchParams?.pageSize || 10;
   
     let query: string = "SELECT * FROM recipes";
     let conditions: string[] = [];
   
-    if (searchParams?.published) conditions.push("published = TRUE");
     if (searchParams?.name) conditions.push(`LOWER(name) LIKE '%${searchParams.name}%'`);
-    if (searchParams?.base?.length) {
-      const baseConditions = searchParams.base.map(base => `FIND_IN_SET('${base}', base)`);
-      conditions.push(`(${baseConditions.join(" OR ")})`);
+    // OR
+    // if (searchParams?.spirit?.length) {
+    //   const spiritConditions = searchParams.spirit.map(spirit => `FIND_IN_SET('${spirit}', spirit)`);
+    //   conditions.push(`(${spiritConditions.join(" OR ")})`);
+    // }
+    // AND
+    if (searchParams?.spirit?.length) {
+      const spiritConditions = searchParams.spirit.map(spirit => `FIND_IN_SET('${spirit}', spirit)`);
+      conditions.push(`(${spiritConditions.join(" AND ")})`);
     }
     if (searchParams?.alcohol?.length) conditions.push(`alcohol IN ('${searchParams.alcohol.join("','")}')`);
   
@@ -90,8 +95,8 @@ class RecipeRepository implements IRecipeRepository {
   update(recipe: Recipe): Promise<number> {
     return new Promise((resolve, reject) => {
       connection.query<OkPacket>(
-        "UPDATE recipes SET name = ?, description = ?, published = ? WHERE id = ?",
-        [recipe.name, recipe.description, recipe.published, recipe.id],
+        "UPDATE recipes SET name = ?, description = ?, likeCount=?, starCount=? WHERE id = ?",
+        [recipe.name, recipe.description,recipe.likeCount,recipe.starCount, recipe.id],
         (err, res) => {
           if (err) reject(err);
           else resolve(res.affectedRows);
