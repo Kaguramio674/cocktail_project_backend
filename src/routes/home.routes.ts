@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { welcome } from "../controllers/home.controller";
+import { welcome,healthCheck } from "../controllers/home.controller";
 
 class HomeRoutes {
   router = Router();
@@ -10,6 +10,7 @@ class HomeRoutes {
 
   intializeRoutes() {
     this.router.get("/", welcome);
+    this.router.get("/health", healthCheck);
   }
 }
 
